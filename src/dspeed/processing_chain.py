@@ -19,6 +19,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
 from numbers import Real
+from types import ModuleType
 from typing import Any
 
 import lgdo
@@ -2558,6 +2559,12 @@ def build_processing_chain(
 
             module = importlib.import_module(recipe["module"])
             func = getattr(module, recipe["function"])
+            if isinstance(func, ModuleType):
+                log.info(
+                    f"Importing function {recipe['module']}.{recipe['function']} did not work as expected; seems to be a module."
+                )
+                func = getattr(func, recipe["function"])
+            assert callable(func)
 
             args = recipe["args"]
             new_vars = [k for k in re.split(",| ", proc_par) if k != ""]
